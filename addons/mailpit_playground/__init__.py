@@ -29,13 +29,16 @@ def _mailpit_server(env):
 
 def _sample_quotation(env):
     """A customer and a quotation, so there is something to send right away."""
+    admin = env.ref("base.user_admin")
+    if "tour_enabled" in admin._fields:
+        admin.tour_enabled = False  # no onboarding tooltips in a playground
     company = env.company
     company.write({
         "name": "Mailpit Playground",
         "email": "sales@playground.example",
         "external_report_layout_id": env.ref("web.external_layout_standard").id,
     })
-    env.ref("base.user_admin").partner_id.write({"email": "admin@playground.example"})
+    admin.partner_id.write({"email": "admin@playground.example"})
     customer = env["res.partner"].create({
         "name": "Northwind Traders",
         "email": "orders@northwind.example",
@@ -45,6 +48,7 @@ def _sample_quotation(env):
     desk = env["product.product"].create({"name": "Height-Adjustable Desk", "list_price": 549.0})
     env["sale.order"].create({
         "partner_id": customer.id,
+        "user_id": admin.id,  # shows up under "My Quotations"
         "order_line": [
             Command.create({"product_id": chair.id, "product_uom_qty": 4}),
             Command.create({"product_id": desk.id, "product_uom_qty": 2}),
