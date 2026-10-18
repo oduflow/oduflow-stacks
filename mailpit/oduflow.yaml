@@ -14,7 +14,6 @@ metadata:
 spec:
   environment:
     name: mailpit-playground
-    hostname: mailpit-playground
     # The environment runs this repository: addons/oduflow_mailpit wires Odoo to Mailpit,
     # .oduflow/odoo.conf turns demo data on.
     repoUrl: https://github.com/oduflow/oduflow-stacks.git
