@@ -1,0 +1,51 @@
+# Mailpit playground: a test inbox for everything Odoo sends.
+#
+#   - Mailpit service: SMTP on the team network, web UI + REST API behind a password,
+#     mailbox kept on a volume;
+#   - a fresh Odoo environment with demo data and Sales, whose outgoing mail goes to Mailpit.
+#
+# Apply:  oduflow stack apply oduflow.yaml --team 1   (see README.md)
+apiVersion: oduflow.dev/v1alpha1
+kind: Stack
+
+metadata:
+  name: mailpit-playground
+
+spec:
+  environment:
+    name: mailpit-playground
+    hostname: mailpit-playground
+    # The environment runs this repository: addons/oduflow_mailpit wires Odoo to Mailpit,
+    # .oduflow/odoo.conf turns demo data on.
+    repoUrl: https://github.com/oduflow/oduflow-stacks.git
+    branch: main
+    # Odoo 20 needs PostgreSQL 16+ on the Oduflow server; use odoo:19.0 on older servers.
+    odooImage: odoo:20.0
+    env:
+      # Mailpit's address on the team network: oduflow-<team id>-svc-<service name>.
+      # Applying to another team? Change the 1.
+      MAILPIT_SMTP_HOST: oduflow-1-svc-mailpit
+      MAILPIT_SMTP_PORT: "1025"
+    modules:
+      install:
+        - oduflow_mailpit
+        - sale_management
+
+  volumes:
+    mailpit-data:
+      description: Mailpit mailbox
+
+  services:
+    mailpit:
+      image: axllent/mailpit:v1.31
+      port: 8025          # web UI and API; SMTP 1025 stays on the team network
+      hostname: mailpit
+      env:
+        MP_UI_AUTH:       # "user:password" for the web UI and the API, read from .env
+          fromEnv: MAILPIT_UI_AUTH
+        MP_DATABASE: /data/mailpit.db
+        MP_MAX_MESSAGES: "5000"
+      volumes:
+        - source: mailpit-data
+          target: /data
+          mode: rw

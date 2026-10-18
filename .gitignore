@@ -1,0 +1,2 @@
+# Secrets for fromEnv references; one per stack directory, never committed.
+.env
