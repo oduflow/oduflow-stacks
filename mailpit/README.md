@@ -10,8 +10,9 @@ This stack creates:
   `oduflow-1-svc-mailpit:1025`. The web UI (port 8025) is published as `mailpit.<your-domain>` and
   asks for the login from `.env`.
 - **A volume** `mailpit-data`, so captured mail survives restarts and image updates.
-- **An Odoo environment** `mailpit-playground`: a fresh Odoo 20 database with demo data and Sales.
-  The `oduflow_mailpit` module points its outgoing mail server at Mailpit.
+- **An Odoo environment** `mailpit-playground`: a fresh Odoo 20 database with Sales. The
+  `mailpit_playground` module points its outgoing mail server at Mailpit and adds a customer with a
+  quotation to send.
 
 ## Try it
 
@@ -30,7 +31,7 @@ Then:
 1. Open Mailpit at `mailpit.<your-domain>` (or the URL on the service card in the dashboard) and sign
    in with the login from `.env`.
 2. In the dashboard, use **Connect As** on the `mailpit-playground` environment.
-3. In Sales, open a quotation, click **Send**, and send it.
+3. In Sales, open the quotation for Northwind Traders, click **Send**, and send it.
 4. The email, with the PDF attached, appears in Mailpit, and no customer received anything.
 
 ## Good to know

@@ -16,7 +16,7 @@ oduflow stack apply oduflow.yaml --team 1
 | [mailpit](mailpit/) | A Mailpit test inbox and an Odoo playground whose outgoing mail goes to it |
 
 Playground environments run this repository itself: `addons/` holds small helper modules the stacks
-install, and `.oduflow/odoo.conf` turns demo data on for them.
+install (Odoo settings and sample data for each playground).
 
 Stacks never delete anything: removing a resource from a manifest leaves it running. See
 [Declarative Stacks](https://docs.oduflow.dev/stacks/) for the format and the apply rules.
