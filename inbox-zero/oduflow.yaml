@@ -44,7 +44,6 @@ spec:
         NODE_ENV: production
         NEXT_PUBLIC_BASE_URL:
           fromEnv: INBOX_ZERO_BASE_URL
-        INTERNAL_API_URL: http://127.0.0.1:3000
         DATABASE_URL:
           database: inbox-zero
           databaseField: url
@@ -67,5 +66,9 @@ spec:
           fromEnv: GOOGLE_PUBSUB_VERIFICATION_TOKEN
         DEFAULT_LLMS:
           fromEnv: DEFAULT_LLMS
+        DEFAULT_LLM_PROVIDER:
+          fromEnv: DEFAULT_LLM_PROVIDER
+        DEFAULT_LLM_MODEL:
+          fromEnv: DEFAULT_LLM_MODEL
         LLM_API_KEY:
           fromEnv: LLM_API_KEY

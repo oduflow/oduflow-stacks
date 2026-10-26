@@ -4,7 +4,9 @@ set -u
 
 RUNTIME_DIR=${INBOX_ZERO_RUNTIME_DIR:-/var/lib/inbox-zero-runtime}
 SECRETS_FILE="${RUNTIME_DIR}/runtime.env"
-WEB_URL=${INTERNAL_API_URL:-http://127.0.0.1:3000}
+INTERNAL_API_URL=${INTERNAL_API_URL:-http://$(hostname):3000}
+export INTERNAL_API_URL
+WEB_URL=${INTERNAL_API_URL}
 
 mkdir -p "${RUNTIME_DIR}"
 
