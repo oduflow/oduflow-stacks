@@ -13,6 +13,7 @@ oduflow stack apply oduflow.yaml --team 1
 
 | Stack | What you get |
 |---|---|
+| [inbox-zero](inbox-zero/) | A personal Inbox Zero instance with managed PostgreSQL and web + cron in one service |
 | [mailpit](mailpit/) | A Mailpit test inbox and an Odoo playground whose outgoing mail goes to it |
 
 Playground environments run this repository itself: `addons/` holds small helper modules the stacks

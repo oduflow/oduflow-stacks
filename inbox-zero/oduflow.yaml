@@ -1,0 +1,74 @@
+# Personal Inbox Zero: managed PostgreSQL plus web and scheduled jobs in one service.
+#
+# Stack V1 requires one Odoo target. The small `inbox-zero-stack` environment is
+# also the checkout used when building the optional wrapper image in this folder.
+# Inbox Zero itself does not use the Odoo environment or its database.
+apiVersion: oduflow.dev/v1alpha1
+kind: Stack
+
+metadata:
+  name: inbox-zero-personal
+
+spec:
+  environment:
+    name: inbox-zero-stack
+    repoUrl: https://github.com/oduflow/oduflow-stacks.git
+    branch: main
+    odooImage: odoo:19.0
+
+  databases:
+    inbox-zero: {}
+
+  volumes:
+    inbox-zero-runtime:
+      description: Generated Inbox Zero runtime secrets
+
+  files:
+    - source: runtime.sh
+      volume: inbox-zero-runtime
+      path: runtime.sh
+
+  services:
+    inbox-zero:
+      image: ghcr.io/elie222/inbox-zero:2.30.0
+      port: 3000
+      hostname: inbox-zero
+      command: ["/bin/sh", "/opt/inbox-zero/runtime.sh"]
+      runtime:
+        stop_timeout: 30
+      volumes:
+        - source: inbox-zero-runtime
+          target: /var/lib/inbox-zero-runtime
+          mode: rw
+        - source: inbox-zero-runtime
+          target: /opt/inbox-zero
+          mode: ro
+      env:
+        NODE_ENV: production
+        NEXT_PUBLIC_BASE_URL:
+          fromEnv: INBOX_ZERO_BASE_URL
+        INTERNAL_API_URL: http://127.0.0.1:3000
+        DATABASE_URL:
+          database: inbox-zero
+          databaseField: url
+        DIRECT_URL:
+          database: inbox-zero
+          databaseField: url
+        QUEUE_BACKEND: internal
+        AUTH_ALLOWED_EMAILS:
+          fromEnv: INBOX_ZERO_OWNER_EMAIL
+        NEXT_PUBLIC_BYPASS_PREMIUM_CHECKS: "true"
+        NEXT_PUBLIC_EMAIL_SEND_ENABLED: "true"
+        NEXT_PUBLIC_AI_MODEL_SETTINGS_DISABLED: "false"
+        GOOGLE_CLIENT_ID:
+          fromEnv: GOOGLE_CLIENT_ID
+        GOOGLE_CLIENT_SECRET:
+          fromEnv: GOOGLE_CLIENT_SECRET
+        GOOGLE_PUBSUB_TOPIC_NAME:
+          fromEnv: GOOGLE_PUBSUB_TOPIC_NAME
+        GOOGLE_PUBSUB_VERIFICATION_TOKEN:
+          fromEnv: GOOGLE_PUBSUB_VERIFICATION_TOKEN
+        DEFAULT_LLMS:
+          fromEnv: DEFAULT_LLMS
+        LLM_API_KEY:
+          fromEnv: LLM_API_KEY
