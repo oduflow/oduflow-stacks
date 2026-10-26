@@ -1,4 +1,4 @@
-# Personal Inbox Zero: managed PostgreSQL plus web and scheduled jobs in one service.
+# Personal Inbox Zero: managed PostgreSQL, persistent Redis, and one web service.
 #
 # Stack V1 requires one Odoo target. The small `inbox-zero-stack` environment is
 # also the checkout used when building the optional wrapper image in this folder.
@@ -22,6 +22,8 @@ spec:
   volumes:
     inbox-zero-runtime:
       description: Generated Inbox Zero runtime secrets
+    inbox-zero-redis-data:
+      description: Persistent Inbox Zero Redis data
 
   files:
     - source: runtime.sh
@@ -29,6 +31,51 @@ spec:
       path: runtime.sh
 
   services:
+    # Oduflow requires an exposure port for auxiliary services. Nothing listens
+    # on 8888: Redis remains reachable only on 6379 inside the team network.
+    inbox-zero-redis:
+      image: redis:7
+      port: 8888
+      hostname: inbox-zero-redis
+      command:
+        - /bin/sh
+        - -c
+        - exec redis-server --appendonly yes --requirepass "$REDIS_PASSWORD"
+      runtime:
+        stop_timeout: 30
+      volumes:
+        - source: inbox-zero-redis-data
+          target: /data
+          mode: rw
+      env:
+        REDIS_PASSWORD:
+          fromEnv: REDIS_TOKEN
+
+    # Inbox Zero's Upstash client speaks HTTP. This bridge translates its REST
+    # calls to the private Redis service. Its real internal port is 80; the
+    # published dummy port keeps that endpoint off Traefik as well.
+    inbox-zero-redis-http:
+      image: hiett/serverless-redis-http:0.0.10
+      port: 8888
+      hostname: inbox-zero-redis-http
+      command:
+        - /bin/sh
+        - -c
+        - >-
+          export SRH_CONNECTION_STRING="redis://:${REDIS_PASSWORD}@${REDIS_HOST}:6379";
+          exec _build/prod/rel/prod/bin/prod start
+      runtime:
+        stop_timeout: 30
+      env:
+        SRH_MODE: env
+        SRH_TOKEN:
+          fromEnv: REDIS_TOKEN
+        SRH_MAX_CONNECTIONS: "3"
+        REDIS_PASSWORD:
+          fromEnv: REDIS_TOKEN
+        REDIS_HOST:
+          fromEnv: REDIS_HOST
+
     inbox-zero:
       image: ghcr.io/elie222/inbox-zero:2.30.0
       port: 3000
@@ -51,6 +98,10 @@ spec:
           database: inbox-zero
           databaseField: url
         QUEUE_BACKEND: internal
+        UPSTASH_REDIS_URL:
+          fromEnv: UPSTASH_REDIS_URL
+        UPSTASH_REDIS_TOKEN:
+          fromEnv: REDIS_TOKEN
         AUTH_ALLOWED_EMAILS:
           fromEnv: INBOX_ZERO_OWNER_EMAIL
         NEXT_PUBLIC_BYPASS_PREMIUM_CHECKS: "true"
@@ -64,11 +115,15 @@ spec:
           fromEnv: GOOGLE_PUBSUB_TOPIC_NAME
         GOOGLE_PUBSUB_VERIFICATION_TOKEN:
           fromEnv: GOOGLE_PUBSUB_VERIFICATION_TOKEN
-        DEFAULT_LLMS:
-          fromEnv: DEFAULT_LLMS
+        TELEGRAM_BOT_TOKEN:
+          fromEnv: TELEGRAM_BOT_TOKEN
+        TELEGRAM_BOT_SECRET_TOKEN:
+          fromEnv: TELEGRAM_BOT_SECRET_TOKEN
         DEFAULT_LLM_PROVIDER:
           fromEnv: DEFAULT_LLM_PROVIDER
         DEFAULT_LLM_MODEL:
           fromEnv: DEFAULT_LLM_MODEL
         LLM_API_KEY:
           fromEnv: LLM_API_KEY
+        OPENAI_COMPATIBLE_BASE_URL:
+          fromEnv: OPENAI_COMPATIBLE_BASE_URL
