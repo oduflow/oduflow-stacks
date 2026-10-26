@@ -33,16 +33,13 @@ spec:
       image: ghcr.io/elie222/inbox-zero:2.30.0
       port: 3000
       hostname: inbox-zero
-      command: ["/bin/sh", "/opt/inbox-zero/runtime.sh"]
+      command: ["/bin/sh", "/var/lib/inbox-zero-runtime/runtime.sh"]
       runtime:
         stop_timeout: 30
       volumes:
         - source: inbox-zero-runtime
           target: /var/lib/inbox-zero-runtime
           mode: rw
-        - source: inbox-zero-runtime
-          target: /opt/inbox-zero
-          mode: ro
       env:
         NODE_ENV: production
         NEXT_PUBLIC_BASE_URL:
