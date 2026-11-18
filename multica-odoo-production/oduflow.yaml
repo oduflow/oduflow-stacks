@@ -18,8 +18,21 @@ spec:
   volumes:
     multica-attachments:
       description: Multica uploaded attachments
+    multica-machine-home:
+      description: Private Machine identity, coding-tool credentials and workspaces
 
   services:
+    multica-machine:
+      # Prebuilt for Linux arm64 and amd64; no image build required at apply time.
+      image: oduist/multica-runtime:0.11.0-2
+      # Outbound-only daemon: no listener or health endpoint on this required port.
+      port: 1
+      hostname: multica-machine.localhost
+      volumes:
+        - source: multica-machine-home
+          target: /home/node
+          mode: rw
+
     multica-api:
       image: ghcr.io/multica-ai/multica-backend:v0.11.0
       port: 8080

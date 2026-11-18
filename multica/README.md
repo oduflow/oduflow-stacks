@@ -1,6 +1,8 @@
 # Multica
 
-Run Multica v0.11.0 behind Oduflow's HTTPS router. The Web and API containers use a managed PostgreSQL database and a named volume for attachments. To run Odoo alongside Multica, use the [Odoo production variant](../multica-odoo-production/).
+Run Multica v0.11.0 behind Oduflow's HTTPS router, with a Docker Runtime (Machine). The Web and API containers use a managed PostgreSQL database and a named volume for attachments. To run Odoo alongside Multica, use the [Odoo production variant](../multica-odoo-production/).
+
+Both variants pull the prebuilt Docker Hub image [`oduist/multica-runtime:0.11.0-2`](https://hub.docker.com/r/oduist/multica-runtime) for Linux arm64 or amd64; no local build is required. Claude Code is downloaded on first start into the persistent home volume. They include the same Machine service and persistent home volume; there is no separate Machine Stack. Machine authentication and coding-tool authorization are separate provisioning steps. See the [Machine guide](runtime/README.md) for setup and optional custom builds.
 
 ## Prepare the host
 
@@ -29,7 +31,7 @@ oduflow stack apply oduflow.yaml --team 1
 oduflow stack status oduflow.yaml --team 1
 ```
 
-Wait for `https://multica.example.com/health` on your actual hostname to report a healthy database and completed migrations. Open the Web domain and enter an allowed address. Without SMTP, Multica prints the sign-in code to the API log: open the `multica-api` service logs in the Oduflow dashboard (or run `oduflow call get_service_logs '{"name": "multica-api"}'`) and copy the code from the `[DEV] Verification code for …` line. Then upload and download an attachment. To run agent tasks, connect a machine with `multica setup self-host --server-url https://multica.example.com --app-url https://multica.example.com` (see the [self-host guide](https://github.com/multica-ai/multica/blob/v0.11.0/SELF_HOSTING.md)).
+Wait for `https://multica.example.com/health` on your actual hostname to report a healthy database and completed migrations. Open the Web domain and enter an allowed address. Without SMTP, Multica prints the sign-in code to the API log: open the `multica-api` service logs in the Oduflow dashboard (or run `oduflow call get_service_logs '{"name": "multica-api"}'`) and copy the code from the `[DEV] Verification code for …` line. Then upload and download an attachment. To run agent tasks, complete the [Docker Machine authentication and verification](runtime/README.md#authenticate-and-verify). Alternatively, connect a host machine with `multica setup self-host --server-url https://multica.example.com --app-url https://multica.example.com` (see the [self-host guide](https://github.com/multica-ai/multica/blob/v0.11.0/SELF_HOSTING.md)).
 
 Back up the `multica-attachments` volume separately from PostgreSQL. The database participates in cluster-wide WAL-G backups when those are configured.
 
