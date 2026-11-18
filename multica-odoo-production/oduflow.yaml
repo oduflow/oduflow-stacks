@@ -21,7 +21,7 @@ spec:
 
   services:
     multica-api:
-      image: ghcr.io/multica-ai/multica-backend:v0.10.0
+      image: ghcr.io/multica-ai/multica-backend:v0.11.0
       hostname: api.multica.example.com
       port: 8080
       volumes:
@@ -42,18 +42,12 @@ spec:
         MULTICA_VCS_SECRET_KEY: secret:multica-vcs
         ALLOW_SIGNUP: "false"
         ALLOWED_EMAILS: {fromEnv: MULTICA_ALLOWED_EMAILS}
-        SMTP_HOST: {fromEnv: MULTICA_SMTP_HOST}
-        SMTP_PORT: {fromEnv: MULTICA_SMTP_PORT}
-        SMTP_USERNAME: {fromEnv: MULTICA_SMTP_USERNAME}
-        SMTP_PASSWORD: secret:multica-smtp
-        SMTP_FROM_EMAIL: {fromEnv: MULTICA_SMTP_FROM_EMAIL}
 
     multica-web:
-      image: ghcr.io/multica-ai/multica-web:v0.10.0
+      image: ghcr.io/multica-ai/multica-web:v0.11.0
       hostname: app.multica.example.com
       port: 3000
       env:
-        HOSTNAME: "0.0.0.0"
         REMOTE_API_URL: https://api.multica.example.com
         NEXT_PUBLIC_API_URL: https://api.multica.example.com
         NEXT_PUBLIC_WS_URL: wss://api.multica.example.com/ws
