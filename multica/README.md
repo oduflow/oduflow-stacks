@@ -8,9 +8,10 @@ Use an Oduflow build with service-only Stacks and per-database cluster selection
 
 Multica v0.11.0 requires PostgreSQL **17** with `pgcrypto` and `pg_trgm` available. The standard `postgres:17` image includes both. Verify the running cluster version before applying. The API runs its own migrations on startup. [Upstream database requirements](https://github.com/multica-ai/multica/blob/v0.11.0/SELF_HOSTING_ADVANCED.md#database-setup)
 
-1. In the chosen manifest, replace every occurrence of `multica.example.com` with a domain dedicated to this Multica installation. Point its `app` and `api` DNS records at Traefik and configure TLS for both. The Web container must also be able to reach the HTTPS API address. Keep the common cookie domain limited to hosts you trust with Multica sessions.
-2. Copy `.env.example` to `.env` in the chosen directory and set the addresses allowed to sign up.
-3. In the target team's Oduflow Secrets, set the following values once and keep them when switching variants.
+1. In the chosen manifest and in `traefik-multica.yml`, replace `multica.example.com` with the hostname for Multica. Multica runs on this one origin: the Web container proxies the API over HTTP, so session cookies stay host-only. Point the hostname at Traefik. The manifest and the drop-in name the API container of team 1 (`oduflow-1-svc-multica-api`); change the `1` for another team.
+2. Copy `traefik-multica.yml` into Oduflow's Traefik dynamic directory (`<config dir>/traefik-dynamic/`, for example `~/.oduflow/conf/traefik-dynamic/`). Next.js cannot forward WebSocket upgrades, so this route sends the browser (`/ws`) and daemon (`/api/daemon/ws`) WebSockets straight to the API. With `[routing] tls = true`, add `entryPoints: [websecure]` and `tls: {certResolver: letsencrypt}` to the router.
+3. Copy `.env.example` to `.env` in the chosen directory and set the addresses allowed to sign up.
+4. In the target team's Oduflow Secrets, set the following values once and keep them when switching variants.
 
 | Team secret | Value |
 |---|---|
@@ -28,7 +29,7 @@ oduflow stack apply oduflow.yaml --team 1
 oduflow stack status oduflow.yaml --team 1
 ```
 
-Wait for `https://api.multica.example.com/healthz` on your actual API domain to report a healthy database and completed migrations. Open the Web domain and enter an allowed address. Without SMTP, Multica prints the sign-in code to the API log: open the `multica-api` service logs in the Oduflow dashboard (or run `oduflow call get_service_logs '{"name": "multica-api"}'`) and copy the code from the `[DEV] Verification code for …` line. Then upload and download an attachment. To run agent tasks, connect a Multica runtime following the [self-host guide](https://github.com/multica-ai/multica/blob/v0.11.0/SELF_HOSTING.md).
+Wait for `https://multica.example.com/health` on your actual hostname to report a healthy database and completed migrations. Open the Web domain and enter an allowed address. Without SMTP, Multica prints the sign-in code to the API log: open the `multica-api` service logs in the Oduflow dashboard (or run `oduflow call get_service_logs '{"name": "multica-api"}'`) and copy the code from the `[DEV] Verification code for …` line. Then upload and download an attachment. To run agent tasks, connect a machine with `multica setup self-host --server-url https://multica.example.com --app-url https://multica.example.com` (see the [self-host guide](https://github.com/multica-ai/multica/blob/v0.11.0/SELF_HOSTING.md)).
 
 Back up the `multica-attachments` volume separately from PostgreSQL. The database participates in cluster-wide WAL-G backups when those are configured.
 
@@ -38,4 +39,4 @@ The Stack does not configure email. To send sign-in codes and invitations by ema
 
 ## Add Odoo later
 
-Use the same team, Stack name, resource names, domains and secrets in both variants. The only manifest difference is the Odoo production block. With Multica already in sync, the production variant's plan should add only Odoo. Applying the service-only manifest again leaves an existing Odoo production running.
+Use the same team, Stack name, resource names, hostname and secrets in both variants. The only manifest difference is the Odoo production block. With Multica already in sync, the production variant's plan should add only Odoo. Applying the service-only manifest again leaves an existing Odoo production running.

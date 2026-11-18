@@ -1,0 +1,16 @@
+# Traefik drop-in for Multica on one origin. Copy it into Oduflow's Traefik
+# dynamic directory (~/.oduflow/conf/traefik-dynamic/ or /etc/oduflow/traefik-dynamic/).
+# The web container proxies HTTP (/api, /v1, /auth, /health) to the API, but
+# Next.js cannot forward WebSocket upgrades: route the browser (/ws) and daemon
+# (/api/daemon/ws) WebSockets straight to the API container on the team network.
+http:
+  routers:
+    multica-websockets:
+      rule: "Host(`multica.example.com`) && (Path(`/ws`) || Path(`/api/daemon/ws`))"
+      service: multica-api
+      priority: 1000
+  services:
+    multica-api:
+      loadBalancer:
+        servers:
+          - url: "http://oduflow-1-svc-multica-api:8080"

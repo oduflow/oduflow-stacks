@@ -16,7 +16,7 @@ oduflow stack apply oduflow.yaml --team 1
 | [inbox-zero](inbox-zero/) | A personal Inbox Zero instance with managed PostgreSQL and web + cron in one service |
 | [mailpit](mailpit/) | A Mailpit test inbox and an Odoo playground whose outgoing mail goes to it |
 | [multica](multica/) | Multica Web and API, managed PostgreSQL 17 and persistent attachments |
-| [multica-odoo-production](multica-odoo-production/) | The same Multica deployment with an Odoo 19 production |
+| [multica-odoo-production](multica-odoo-production/) | The same Multica deployment with an Odoo 20 production |
 
 Playground environments run this repository itself: `addons/` holds small helper modules the stacks
 install (Odoo settings and sample data for each playground).
